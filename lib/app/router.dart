@@ -1,14 +1,9 @@
 import 'package:go_router/go_router.dart';
-<<<<<<< HEAD
-import 'package:studen_exam_poc/feature/student/view/student_edit_view.dart';
-
-=======
 import 'package:studen_exam_poc/feature/course/view/course_view.dart';
 import 'package:studen_exam_poc/feature/student/view/student_edit_view.dart';
 
 import '../feature/course/view/course_add_view.dart';
 import '../feature/course/view/course_edit_view.dart';
->>>>>>> feature/course
 import '../feature/student/view/student_add_view.dart';
 import '../feature/student/view/student_view.dart';
 
@@ -38,8 +33,6 @@ class AppRouter {
               return StudentEditView(studentId: studentId);
             }
         ),
-<<<<<<< HEAD
-=======
         //Course
         GoRoute(
             path: '/Course',
@@ -61,7 +54,6 @@ class AppRouter {
               return CourseEditView(courseId: courseId);
             }
         ),
->>>>>>> feature/course
-      ]
+   ]
   );
 }
