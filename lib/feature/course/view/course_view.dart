@@ -129,7 +129,7 @@ Widget _courseCardContainer(BuildContext context, CourseModel? course) {
         const Divider(height: 2, thickness: 0.3),
         Gap(context.dynamicHeight(0.015)),
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             GestureDetector(
               onTap: (){

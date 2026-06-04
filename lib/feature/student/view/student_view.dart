@@ -31,8 +31,9 @@ class _StudentViewState extends State<StudentView> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<StudentViewModel>().fetchStudents();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await context.read<StudentViewModel>().fetchStudents();
+      await context.read<CourseViewModel>().fetchCourses();
     });
   }
 
@@ -134,7 +135,7 @@ Widget _studentCardContainer(BuildContext context, StudentModel? student) {
         const Divider(height: 2, thickness: 0.3),
         Gap(context.dynamicHeight(0.02)),
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          mainAxisAlignment: MainAxisAlignment.start,
           children: [
             GestureDetector(
               onTap: (){
@@ -156,6 +157,7 @@ Widget _studentCardContainer(BuildContext context, StudentModel? student) {
                     ],
                   )),
             ),
+            Gap(context.veryLowWidthValue),
             GestureDetector(
               onTap: (){
                 _showStudentDetailsSheet(context, student!);
@@ -176,6 +178,7 @@ Widget _studentCardContainer(BuildContext context, StudentModel? student) {
                     ],
                   )),
             ),
+            Gap(context.veryLowWidthValue),
             GestureDetector(
               onTap: (){
                 context.read<StudentViewModel>().deleteStudent(student?.id ?? 0);
