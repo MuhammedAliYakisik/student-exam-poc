@@ -1,5 +1,6 @@
 import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
+import 'package:studen_exam_poc/feature/course/course_view_model.dart';
 import 'package:studen_exam_poc/feature/student/student_view_model.dart';
 
 class ApplicationProvider {
@@ -10,9 +11,10 @@ class ApplicationProvider {
 
     //student
     ChangeNotifierProvider(create: (context) => StudentViewModel()),
+
+    //course
+    ChangeNotifierProvider(create: (context) => CourseViewModel()),
   ];
-
-
 
 
 }
