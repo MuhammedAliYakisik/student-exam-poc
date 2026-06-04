@@ -108,4 +108,10 @@ class ResultsViewModel extends ChangeNotifier {
       );
     }
   }
+  Future<List<ResultsModel>> getResultsByStudentAndCourse(int studentId, int courseId,) async {
+    return await _service.getResultsByStudentAndCourse(
+      studentId,
+      courseId,
+    );
+  }
 }

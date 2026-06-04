@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
@@ -7,15 +6,12 @@ import 'package:studen_exam_poc/components/button/custom_button.dart';
 import 'package:studen_exam_poc/components/snackbar/custom_snack_bar.dart';
 import 'package:studen_exam_poc/components/textfield/custom_textfield.dart';
 import 'package:studen_exam_poc/core/extension/context_extension.dart';
-import 'package:studen_exam_poc/core/extension/size_extension.dart';
 import 'package:studen_exam_poc/feature/results/results_view_model.dart';
 import 'package:studen_exam_poc/feature/student/student_view_model.dart';
 
 import '../../../components/appBar/custom_app_bar.dart';
 import '../../../components/bottom_nav_bar/custom_bottom_nav_bar.dart';
 import '../../../components/dropdown/custom_dropdown.dart';
-import '../../../components/text/custom_text.dart';
-import '../../../core/constant/color_constant.dart';
 import '../../course/course_model.dart';
 import '../../course/course_view_model.dart';
 import '../../student/student_model.dart';
@@ -34,6 +30,7 @@ class _ResultsViewState extends State<ResultsView> {
   final exam1Controller = TextEditingController();
   final exam2Controller = TextEditingController();
   final exam3Controller = TextEditingController();
+  List<ResultsModel> existingResults = [];
 
   @override
   void initState() {
@@ -50,6 +47,40 @@ class _ResultsViewState extends State<ResultsView> {
     exam2Controller.dispose();
     exam3Controller.dispose();
     super.dispose();
+  }
+  Future<void> loadExistingResults() async {
+    if (selectedStudent == null || selectedCourse == null) {
+      return;
+    }
+
+    final results = await context
+        .read<ResultsViewModel>()
+        .getResultsByStudentAndCourse(
+      selectedStudent?.id ?? 0,
+      selectedCourse?.id ?? 0,
+    );
+
+    existingResults = results;
+
+    exam1Controller.clear();
+    exam2Controller.clear();
+    exam3Controller.clear();
+
+    if (results.isNotEmpty) {
+      if (results.length >= 1) {
+        exam1Controller.text = results[0].score.toString();
+      }
+
+      if (results.length >= 2) {
+        exam2Controller.text = results[1].score.toString();
+      }
+
+      if (results.length >= 3) {
+        exam3Controller.text = results[2].score.toString();
+      }
+    }
+
+    setState(() {});
   }
   @override
   Widget build(BuildContext context) {
@@ -116,52 +147,65 @@ class _ResultsViewState extends State<ResultsView> {
                   ),
                   Gap(context.mediumHeightValue),
                   CustomButton(text: "Kaydet", onPressed: () async {
-                    if(selectedStudent != null && selectedCourse != null) {
-                      final String note1 = exam1Controller.text.trim();
-                      final String note2 = exam2Controller.text.trim();
-                      final String note3 = exam3Controller.text.trim();
+                    if (selectedStudent == null || selectedCourse == null) {
+                      showCustomSnackBar(
+                        context,
+                        "Lütfen öğrenci ve ders seçiniz.",
+                        1,
+                      );
+                      return;
+                    }
 
-                      if (note1.isEmpty && note2.isEmpty && note3.isEmpty) {
-                        showCustomSnackBar(context, "Lütfen en az bir sınav notu giriniz.", 1);
+                    final notes = [
+                      exam1Controller.text.trim(),
+                      exam2Controller.text.trim(),
+                      exam3Controller.text.trim(),
+                    ];
+
+                    if (notes.every((e) => e.isEmpty)) {
+                      showCustomSnackBar(
+                        context,
+                        "Lütfen en az bir sınav notu giriniz.",
+                        1,
+                      );
+                      return;
+                    }
+
+                    for (int i = 0; i < notes.length; i++) {
+                      if (notes[i].isEmpty) continue;
+
+                      final score = double.tryParse(notes[i]);
+
+                      if (score == null) {
+                        showCustomSnackBar(context, "Geçerli bir not giriniz.", 1,);
                         return;
                       }
-                      if (note1.isNotEmpty) {
-                        await resultsVm.addResults(
+
+                      if (existingResults.length > i) {
+                        await resultsVm.updateResult(
                           ResultsModel(
-                            id: 0,
+                            id: existingResults[i].id,
                             studentId: selectedStudent?.id ?? 0,
                             courseId: selectedCourse?.id ?? 0,
-                            score: double.tryParse(note1) ?? 0.0,
+                            score: score,
+                          ),
+                        );
+                      } else {
+                        await resultsVm.addResults(
+                          ResultsModel(
+                            id: null,
+                            studentId: selectedStudent?.id ?? 0,
+                            courseId: selectedCourse?.id ?? 0,
+                            score: score,
                           ),
                         );
                       }
-                      if (note2.isNotEmpty) {
-                        await resultsVm.addResults(
-                          ResultsModel(
-                            id: 0,
-                            studentId: selectedStudent?.id ?? 0,
-                            courseId: selectedCourse?.id ?? 0,
-                            score: double.tryParse(note2) ?? 0.0,
-                          ),
-                        );
-                      }
-                      if (note3.isNotEmpty) {
-                        await resultsVm.addResults(
-                          ResultsModel(
-                            id: 0,
-                            studentId: selectedStudent?.id ?? 0,
-                            courseId: selectedCourse?.id ?? 0,
-                            score: double.tryParse(note3) ?? 0.0,
-                          ),
-                        );
-                      }
-                      showCustomSnackBar(context, "Kaydetme işlemi başarılı", 2);
-                      exam1Controller.clear();
-                      exam2Controller.clear();
-                      exam3Controller.clear();
-                    }else {
-                      showCustomSnackBar(context, "Lütfen öğrenci ve ders seçiniz.", 1);
                     }
+
+                    await loadExistingResults();
+
+                    showCustomSnackBar(
+                      context, "Kaydetme işlemi başarılı", 2,);
                   })
                 ],
               ),
@@ -178,105 +222,27 @@ class _ResultsViewState extends State<ResultsView> {
             prefixIcon: Icons.person_search_outlined,
             value: selectedStudent,
             items: students.map((p) => DropdownMenuItem(value: p, child: Text(p.fullName, overflow: TextOverflow.ellipsis))).toList(),
-            onChanged: (val) => setState(() => selectedStudent = val),
+              onChanged: (val) async {
+                setState(() {
+                  selectedStudent = val;
+                });
+                await loadExistingResults();
+              }
           ),
           CustomDropdown<CourseModel>(
             hintText: "Dersi Seçin",
             prefixIcon: Icons.book_outlined,
             value: selectedCourse,
             items: courses.map((c) => DropdownMenuItem(value: c, child: Text(c.name, overflow: TextOverflow.ellipsis))).toList(),
-            onChanged: (val) => setState(() => selectedCourse = val),
+              onChanged: (val) async {
+                setState(() {
+                  selectedCourse = val;
+                });
+                await loadExistingResults();
+              }
           ),
         ],
       );
   }
-}
-
-Widget _resultsCardContainer(BuildContext context, CourseModel? course) {
-  return Container(
-    margin: EdgeInsets.symmetric(vertical: context.lowHeightValue),
-    padding: context.paddingNormal,
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(20),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withOpacity(0.04),
-          blurRadius: 15,
-          offset: const Offset(0, 8),
-        ),
-      ],
-    ),
-    child: Column(
-      children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Center(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    CustomText(course?.name ?? "Derse Bulunmamaktadır.",
-                        color: ColorConstant.instance.textPrimaryColor, fontWeight: FontWeight.bold, isTitle: true),
-                    Gap(context.lowValue),
-
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-        Gap(context.dynamicHeight(0.01)),
-        const Divider(height: 2, thickness: 0.3),
-        Gap(context.dynamicHeight(0.015)),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            GestureDetector(
-              onTap: (){
-                context.go('/CourseEdit/${course?.id}');
-              },
-              child: Container(decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(
-                      context.lowValue),
-                  color: ColorConstant.instance.secondaryColor
-                      .withOpacity(
-                      0.1)),
-                  padding: EdgeInsets.all(context.lowValue),
-                  child: Row(
-                    children: [
-                      Icon(Icons.edit_outlined, size: context.dynamicHeight(0.03),
-                        color: ColorConstant.instance.secondaryColor,),
-                      CustomText("Düzenle", isSmall: true, fontWeight: FontWeight.bold,
-                        color: ColorConstant.instance.secondaryColor,),
-                    ],
-                  )),
-            ),
-            GestureDetector(
-              onTap: (){
-                context.read<CourseViewModel>().deleteCourse(course?.id ?? 0);
-              },
-              child: Container(decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(
-                      context.lowValue),
-                  color: ColorConstant.instance.errorColor
-                      .withOpacity(
-                      0.1)),
-                  padding: EdgeInsets.all(context.lowValue),
-                  child: Row(
-                    children: [
-                      Icon(Icons.delete_outline_outlined, size: context.dynamicHeight(0.03),
-                        color: ColorConstant.instance.errorColor,),
-                      CustomText("Sil", isSmall: true, fontWeight: FontWeight.bold,
-                        color: ColorConstant.instance.errorColor,),
-                    ],
-                  )),
-            ),
-          ],
-        ),
-      ],
-    ),
-  );
 }
 

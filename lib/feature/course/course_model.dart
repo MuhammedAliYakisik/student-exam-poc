@@ -6,6 +6,15 @@ class CourseModel {
     required this.id,
     required this.name,
   });
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+          other is CourseModel &&
+              runtimeType == other.runtimeType &&
+              id == other.id;
+
+  @override
+  int get hashCode => id.hashCode;
 
   factory CourseModel.fromMap(Map<String,dynamic> map){
     return CourseModel(
@@ -20,3 +29,4 @@ class CourseModel {
     };
   }
 }
+

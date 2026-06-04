@@ -81,5 +81,19 @@ class ResultsService {
 
     return result.length;
   }
+  Future<List<ResultsModel>> getResultsByStudentAndCourse(int studentId, int courseId,) async {
+    final db = await _databaseService;
+
+    final maps = await db.query(
+      'exam_result',
+      where: 'student_id = ? AND course_id = ?',
+      whereArgs: [studentId, courseId],
+      orderBy: 'id ASC',
+    );
+
+    return maps
+        .map((e) => ResultsModel.fromMap(e))
+        .toList();
+  }
 
 }
