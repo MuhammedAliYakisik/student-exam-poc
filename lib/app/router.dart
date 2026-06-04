@@ -1,4 +1,6 @@
 import 'package:go_router/go_router.dart';
+import 'package:studen_exam_poc/feature/results/view/results_view.dart';
+import 'package:studen_exam_poc/feature/student/view/student_edit_view.dart';
 import 'package:studen_exam_poc/feature/course/view/course_view.dart';
 import 'package:studen_exam_poc/feature/student/view/student_edit_view.dart';
 
@@ -54,6 +56,13 @@ class AppRouter {
               return CourseEditView(courseId: courseId);
             }
         ),
-   ]
+        //results
+        GoRoute(
+            path: '/Results',
+            builder: (context, state) {
+              return const ResultsView();
+            }
+        ),
+      ]
   );
 }
