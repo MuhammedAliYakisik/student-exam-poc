@@ -1,6 +1,7 @@
 import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
 import 'package:studen_exam_poc/feature/course/course_view_model.dart';
+import 'package:studen_exam_poc/feature/results/results_view_model.dart';
 import 'package:studen_exam_poc/feature/student/student_view_model.dart';
 
 class ApplicationProvider {
@@ -14,6 +15,9 @@ class ApplicationProvider {
 
     //course
     ChangeNotifierProvider(create: (context) => CourseViewModel()),
+
+    //results
+    ChangeNotifierProvider(create: (context) => ResultsViewModel()),
   ];
 
 
