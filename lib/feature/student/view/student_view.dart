@@ -13,6 +13,9 @@ import '../../../components/bottom_nav_bar/custom_bottom_nav_bar.dart';
 import '../../../components/text/custom_text.dart';
 import '../../../components/textfield/custom_textfield.dart';
 import '../../../core/constant/color_constant.dart';
+import '../../course/course_model.dart';
+import '../../course/course_view_model.dart';
+import '../../results/results_view_model.dart';
 
 class StudentView extends StatefulWidget {
   const StudentView({super.key});
@@ -155,7 +158,7 @@ Widget _studentCardContainer(BuildContext context, StudentModel? student) {
             ),
             GestureDetector(
               onTap: (){
-                _showPolicySheet(context, "Notlar",  "Bu öğrenciye ait not bulunmamaktadır.");
+                _showStudentDetailsSheet(context, student!);
               },
               child: Container(decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(
@@ -208,7 +211,13 @@ FloatingActionButton _buildFloatingActionButton(BuildContext context) {
     child: const Icon(Icons.person_add_alt),
   );
 }
-void _showPolicySheet(BuildContext context, String title, String content) {
+void _showStudentDetailsSheet(BuildContext context, StudentModel student) {
+  final resultsVM = context.read<ResultsViewModel>();
+  final courseVM = context.read<CourseViewModel>();
+
+  resultsVM.fetchResultsByStudentId(student.id ?? 0);
+  resultsVM.fetchStudentAverageScore(student.id ?? 0);
+
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
@@ -217,26 +226,118 @@ void _showPolicySheet(BuildContext context, String title, String content) {
       borderRadius: BorderRadius.vertical(top: Radius.circular(context.normalValue)),
     ),
     builder: (context) {
-      return Container(
-        height: context.dynamicHeight(0.5),
-        padding: context.paddingNormal,
-        child: Column(
-          children: [
-            Container(
-              width: 40,
-              height: 5,
-              decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(10)),
+      return Consumer<ResultsViewModel>(
+        builder: (context, rVM, child) {
+          if (rVM.isLoading) {
+            return SizedBox(
+              height: context.dynamicHeight(0.5),
+              child: const Center(child: CircularProgressIndicator()),
+            );
+          }
+
+          final Map<int, List<double>> courseNotesMap = {};
+          for (var res in rVM.results) {
+            courseNotesMap.putIfAbsent(res.courseId, () => []).add(res.score);
+          }
+
+          return Container(
+            height: context.dynamicHeight(0.6),
+            padding: context.paddingNormal,
+            child: Column(
+              children: [
+                Container(
+                  width: 40,
+                  height: 5,
+                  decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(10)),
+                ),
+                Gap(context.lowHeightValue),
+                CustomText("${student.fullName} - Akademik Durum", isTitle: true, fontWeight: FontWeight.bold),
+                Container(
+                  margin: EdgeInsets.symmetric(vertical: context.lowHeightValue),
+                  padding: context.paddingNormal,
+                  decoration: BoxDecoration(
+                    color: ColorConstant.instance.secondaryColor.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      CustomText("Tamamlanan Derslerin Ortalaması:", fontWeight: FontWeight.bold),
+                      CustomText(
+                        rVM.averageScore> 0 ? rVM.averageScore.toStringAsFixed(1) : "0.0",
+                        fontWeight: FontWeight.bold,
+                        color: ColorConstant.instance.secondaryColor,
+                      ),
+                    ],
+                  ),
+                ),
+                const Divider(),
+                Expanded(
+                  child: courseNotesMap.isEmpty
+                      ? Center(child: CustomText("Bu öğrenciye ait kayıtlı ders bulunamadı.", isSmall: true))
+                      : ListView.builder(
+                    itemCount: courseNotesMap.keys.length,
+                    itemBuilder: (context, index) {
+                      final courseId = courseNotesMap.keys.elementAt(index);
+                      final notes = courseNotesMap[courseId] ?? [];
+
+                      final courseName = courseVM.courses
+                          .firstWhere((c) => c.id == courseId, orElse: () => CourseModel(id: 0, name: "Bilinmeyen Ders"))
+                          .name;
+
+                      final bool isCompleted = notes.length >= 3;
+
+                      final double courseAvg = notes.reduce((a, b) => a + b) / notes.length;
+
+                      return Card(
+                        margin: EdgeInsets.symmetric(vertical: context.lowHeightValue / 2),
+                        elevation: 0,
+                        color: ColorConstant.instance.secondaryColor.withOpacity(0.08),
+                        shape: RoundedRectangleBorder(
+                          side: BorderSide(color: Colors.grey.withOpacity(0.2), width: 0.5),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Padding(
+                          padding: context.paddingNormal,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  CustomText(courseName, fontWeight: FontWeight.bold),
+
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: isCompleted
+                                          ? Colors.green.withOpacity(0.1)
+                                          : Colors.orange.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: CustomText(
+                                      isCompleted ? "Tamamlandı" : "Tamamlanmadı",
+                                      isSmall: true,
+                                      fontWeight: FontWeight.bold,
+                                      color: isCompleted ? Colors.green : Colors.orange,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Gap(context.veryLowHeightValue),
+                              CustomText("Alınan Notlar: ${notes.map((n) => n.toStringAsFixed(0)).join(', ')}", isSmall: true),
+                              CustomText("Ders Ortalaması: ${courseAvg.toStringAsFixed(1)}", isSmall: true, color: Colors.grey[600]),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
             ),
-            Gap(context.lowHeightValue),
-            CustomText(title, isTitle: true, fontWeight: FontWeight.bold),
-            const Divider(),
-            Expanded(
-              child: SingleChildScrollView(
-                child: CustomText(content, isTitle: false, color: Colors.black87),
-              ),
-            ),
-          ],
-        ),
+          );
+        },
       );
     },
   );
