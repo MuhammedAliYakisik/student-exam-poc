@@ -25,9 +25,9 @@ class StudentViewModel extends ChangeNotifier {
       students = result;
       filteredStudents = result;
       notifyListeners();
-      print("Öğrencileri Çekme İşlemi Başarılı: ${students.length}");
+      debugPrint("Öğrencileri Çekme İşlemi Başarılı: ${students.length}");
     }catch(e){
-      print("Öğrencileri Çekme İşlemi Hata Verdi: $e");
+      debugPrint("Öğrencileri Çekme İşlemi Hata Verdi: $e");
     }
     setLoading(false);
   }
@@ -46,9 +46,9 @@ class StudentViewModel extends ChangeNotifier {
       students.add(savedStudent);
       filteredStudents.add(savedStudent);
       notifyListeners();
-      print("Öğrenci Ekleme İşlemi Başarılı: ${savedStudent.id}");
+      debugPrint("Öğrenci Ekleme İşlemi Başarılı: ${savedStudent.id}");
     }catch(e){
-      print("Öğrenci Ekleme İşlemi Hata Verdi: $e");
+      debugPrint("Öğrenci Ekleme İşlemi Hata Verdi: $e");
     }
     setLoading(false);
   }
@@ -62,7 +62,7 @@ class StudentViewModel extends ChangeNotifier {
         notifyListeners();
 
     }catch(e){
-      print("Öğrenci Silme İşlemi Hata Verdi: $e");
+      debugPrint("Öğrenci Silme İşlemi Hata Verdi: $e");
     }
     setLoading(false);
   }
@@ -80,9 +80,9 @@ class StudentViewModel extends ChangeNotifier {
         filteredStudents[filteredIndex] = student;
       }
       notifyListeners();
-      print("Öğrenci Güncelleme İşlemi Başarılı: ${student.fullName}");
+      debugPrint("Öğrenci Güncelleme İşlemi Başarılı: ${student.fullName}");
     }catch(e){
-      print("Öğrenci Güncelleme İşlemi Hata Verdi: $e");
+      debugPrint("Öğrenci Güncelleme İşlemi Hata Verdi: $e");
     }
     setLoading(false);
   }
@@ -97,7 +97,7 @@ class StudentViewModel extends ChangeNotifier {
       }
       notifyListeners();
     }catch(e){
-      print("Öğrenci Arama İşlemi Hata Verdi: $e");
+      debugPrint("Öğrenci Arama İşlemi Hata Verdi: $e");
     }
     setLoading(false);
   }

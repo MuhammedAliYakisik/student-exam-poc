@@ -25,9 +25,9 @@ class CourseViewModel extends ChangeNotifier {
       courses = result;
       filteredCourses = result;
       notifyListeners();
-      print("Dersler Çekme İşlemi Başarılı: ${courses.length}");
+      debugPrint("Dersler Çekme İşlemi Başarılı: ${courses.length}");
     }catch(e){
-      print("Dersleri Çekme İşlemi Hata Verdi: $e");
+      debugPrint("Dersleri Çekme İşlemi Hata Verdi: $e");
     }
     setLoading(false);
   }
@@ -43,9 +43,9 @@ class CourseViewModel extends ChangeNotifier {
       courses.add(savedCourse);
       filteredCourses.add(savedCourse);
       notifyListeners();
-      print("Ders Ekleme İşlemi Başarılı: ${savedCourse.id}");
+      debugPrint("Ders Ekleme İşlemi Başarılı: ${savedCourse.id}");
     }catch(e){
-      print("Ders Ekleme İşlemi Hata Verdi: $e");
+      debugPrint("Ders Ekleme İşlemi Hata Verdi: $e");
     }
     setLoading(false);
   }
@@ -59,7 +59,7 @@ class CourseViewModel extends ChangeNotifier {
       notifyListeners();
 
     }catch(e){
-      print("Ders Silme İşlemi Hata Verdi: $e");
+      debugPrint("Ders Silme İşlemi Hata Verdi: $e");
     }
     setLoading(false);
   }
@@ -77,9 +77,9 @@ class CourseViewModel extends ChangeNotifier {
         filteredCourses[filteredIndex] = course;
       }
       notifyListeners();
-      print("Ders Güncelleme İşlemi Başarılı: ${course.name}");
+      debugPrint("Ders Güncelleme İşlemi Başarılı: ${course.name}");
     }catch(e){
-      print("Ders Güncelleme İşlemi Hata Verdi: $e");
+      debugPrint("Ders Güncelleme İşlemi Hata Verdi: $e");
     }
     setLoading(false);
   }
@@ -94,7 +94,7 @@ class CourseViewModel extends ChangeNotifier {
       }
       notifyListeners();
     }catch(e){
-      print("Ders Arama İşlemi Hata Verdi: $e");
+      debugPrint("Ders Arama İşlemi Hata Verdi: $e");
     }
     setLoading(false);
   }

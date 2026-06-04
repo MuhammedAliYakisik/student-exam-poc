@@ -42,7 +42,7 @@ class CustomBottomNavBar extends StatelessWidget {
             children: [
               _buildNavItem(context, 0, Icons.people_outline, "Öğrenciler", primaryBlue),
               _buildNavItem(context, 1, Icons.more_time_sharp, "Dersler", primaryBlue),
-              _buildNavItem(context, 2, Icons.people_outline, "Notlar", primaryBlue),
+              _buildNavItem(context, 2, Icons.sticky_note_2_outlined, "Notlar", primaryBlue),
             ],
           ),
         ),
